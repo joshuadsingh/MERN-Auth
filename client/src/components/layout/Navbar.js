@@ -4,7 +4,7 @@ import AuthContext from "../../context/AuthContext";
 import LogOutBtn from "../auth/LogOutBtn";
 
 function Navbar() {
-  const { loggedIn, username } = useContext(AuthContext);
+  const { loggedIn, username, _id } = useContext(AuthContext);
 
   return (
     <div>

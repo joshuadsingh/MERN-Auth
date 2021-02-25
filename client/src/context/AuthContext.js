@@ -19,7 +19,7 @@ function AuthContextProvider(props) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ loggedIn: (loggedIn) ? loggedIn.loggedIn : false, username: (loggedIn) ? loggedIn.name : false, getLoggedIn }}>
+    <AuthContext.Provider value={{ loggedIn: loggedIn?.loggedIn, username: (loggedIn?.name) ? loggedIn?.name : "User", _id: loggedIn?._id, getLoggedIn }}>
       {props.children}
     </AuthContext.Provider>
   );

@@ -2,6 +2,7 @@ const router = require("express").Router();
 const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const auth = require("../middleware/auth");
 
 // register
 
@@ -136,15 +137,60 @@ router.get("/loggedIn", async (req, res) => {
     const decodedToken = jwt.decode(token, {complete: true});
     const existingUser = await User.findOne({ _id: decodedToken.payload.user });
 
-    console.log(existingUser);
-
     jwt.verify(token, process.env.JWT_SECRET);
 
     // res.send(true);
-    res.json({loggedIn: true, name: existingUser.name})
+    res.json({ loggedIn: true, name: existingUser.name, _id: existingUser._id })
   } catch (err) {
     res.json({ loggedIn: false });
   }
 });
+
+// Update user details
+
+router.put("/user/:id", auth, async (req, res) => {
+  try {
+    const { name, email, _id } = req.body;
+
+    // Get user
+    const existingUser = await User.findOne({ _id });
+
+    // Change user details
+    existingUser.name = name;
+    existingUser.email = email;
+
+    // update
+    await existingUser.save();
+
+    // send response
+    res.json({name, email});
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send();
+  }
+});
+
+// view user 
+
+router.get("/user/:id", async (req, res) => {
+  try {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ errorMessage: "Unauthorized" });
+
+    const decodedToken = jwt.decode(token, {complete: true});
+    
+    if(req.params.id === decodedToken.payload.user){
+      const existingUser = await User.findOne({ _id: decodedToken.payload.user });
+      res.json({ _id: existingUser._id, name: existingUser.name, email: existingUser.email });
+    } else {
+      res.status(401).json({ errorMessage: "Unauthorized" });
+    }
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send();
+  }
+})
 
 module.exports = router;
